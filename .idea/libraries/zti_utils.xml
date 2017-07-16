@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="zti-utils">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/zti-utils-1.0.6.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
