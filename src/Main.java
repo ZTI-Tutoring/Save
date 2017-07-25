@@ -9,6 +9,7 @@ public class Main {
     private static boolean running = true;
     private static ArrayList<Student> students = new ArrayList<>();
 
+    //asdasd
     public static void main(String[] args) {
         loadData();
         scn = new Scanner(System.in);
