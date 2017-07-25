@@ -1,61 +1,37 @@
-import javax.swing.*;
-import java.io.*;
+import by.zti.main.scanner.Command;
+import by.zti.main.scanner.ConsoleScanner;
+import by.zti.main.serializer.Serializer;
+
+import java.io.File;
 import java.util.ArrayList;
-import java.util.Formatter;
 import java.util.Scanner;
 
 public class Main {
     private static Scanner scn;
     private static boolean running = true;
     private static ArrayList<Student> students = new ArrayList<>();
+    private static Serializer<ArrayList<Student>> serializer = new Serializer<ArrayList<Student>>(new File("test"));
 
     public static void main(String[] args) {
         loadData();
-        scn = new Scanner(System.in);
-        while (running){
-            String c = scn.nextLine();
-            switch (c.toUpperCase()){
-                case "EXIT":
-                    running = false;
-                    break;
-                case "ADD":
-                    students.add(new Student(scn.next(), scn.nextInt()));
-                    break;
-                case "PRINT":
-                    students.forEach(System.out::println);
-                    break;
-                default:
-                    System.out.println("ERROR");
-                    break;
-            }
-        }
-        saveData();
+        ConsoleScanner scanner = new ConsoleScanner("/", "-", false);
+        scanner.addCommand(new Command("exit", "").setConsumer(map -> {scanner.stop(); saveData();}));
+        scanner.addCommand(new Command("add", "").setConsumer(map -> {
+            if (!map.containsKey("n")||!map.containsKey("id")){return;}
+            if (map.get("n").size()==0||map.get("id").size()==0){return;}
+            try {map.get("id").forEach(s -> Integer.valueOf(s)); } catch (Exception e) {return;}
+            students.add(new Student(map.get("n").get(0), Integer.valueOf(map.get("id").get(0))));
+        }));
+        scanner.addCommand(new Command("print", "").setConsumer(map -> students.forEach(System.out::println)));
+        scanner.start();
     }
 
     private static void saveData() {
-        PrintWriter writer = null;
-        try {
-            writer = new PrintWriter(new File("res/Save.txt"));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        String s = "";
-        for (Student student: students){
-            s += student.getName()+" "+student.getId()+"\n";
-        }
-        writer.print(s);
-        writer.close();
+        serializer.serialize(students);
     }
 
     private static void loadData() {
-        try {
-            scn = new Scanner(new File("res/Save.txt"));
-        } catch (FileNotFoundException e) {
-            JOptionPane.showMessageDialog(null, "Файл не найден");
-            e.printStackTrace();
-        }
-        while (scn.hasNext()) {
-            students.add(new Student(scn.next(), scn.nextInt()));
-        }
+        if (!serializer.getFile().exists()) {serializer.serialize(students);}
+        students = serializer.deserialize();
     }
 }
